@@ -1,0 +1,187 @@
+---
+title: "`r paste('Catch Forecast for fisheries in ', params$area, sep='') `"
+author: "`r paste('Season ', as.integer(params$s)-1, '/', sub('..', '', as.character(params$s) ), sep='') `"
+geometry: "left=2cm,right=2cm,top=0.5cm,bottom=1cm"
+output: 
+params:
+  #the default value of a parameter in the YAML header cannot be NULL, so we’ve used NA as the default value
+  s: NA #Season year. No default.
+  area: NA #Default is RSR N70. 
+  sp: NA #should be imported from the dabase after approved
+  alt_date: NA #Instead of current date use other date as a standard to check for vms presence - could be useful for other areas during the season
+  rep_period: NA #how many reporting periods to calculate the averages? Default is NA
+  type: NA #Can be changed to type = "avg_set"
+  change_vsls: NA #decides where to consider or not to consider different vsls in the projection
+  vslchooser_l: NA #vessel chooser options
+  vslchooser_r: NA #vessel chooser options
+  
+---
+
+```{r global-options, include=FALSE}
+rm(list=setdiff(ls(), "params"))
+#Set chunck options for the whole document here
+#See str(knitr::opts_chunk$get()) for a list of default chunk options.
+library(knitr)
+opts_chunk$set(fig.width=8, fig.height=4, dpi=200,cache=FALSE,
+               highlight=F,echo=FALSE, warning=FALSE, message=FALSE)
+#Set some pander options to format tables (limited options)
+library(pander) #Need to install pandoc on your computer too
+panderOptions('table.alignment.default', function(df)
+    ifelse(sapply(df, is.numeric), 'right', 'left'))
+panderOptions('table.split.table', Inf)
+panderOptions('table.split.cells', Inf)
+panderOptions('keep.trailing.zeros', TRUE)
+
+s = as.integer(params$s)
+area = params$area
+sp = params$sp
+alt_date = params$alt_date
+rep_period = params$rep_period
+type = params$type
+change_vsls <- params$change_vsls
+vslchooser_l <- params$vslchooser_l
+vslchooser_r <- params$vslchooser_r
+
+```
+
+```{r load-vsls-and-avgs, results='asis'}
+
+# 3: Import management data
+    
+    fsr_data <- get_fsr_data(s, area, sp, alt_date)
+      gear <- fsr_data$gear
+      
+    notified_vsls <- check_notified_vsls(fsr_data)
+    
+    licenced_vessels <- check_fishing_licences(fsr_data) %>% 
+      merge(notified_vsls, all=T)
+    
+# 4: Import CE data
+    
+            # message(paste("alt_date is", alt_date))
+            message(paste("alt_date class is", class(alt_date)))
+    
+    catch_effort <- get_ce_raw_data(s, fsr_data)
+
+      
+```
+
+```{r results='asis'}
+        
+# 5: Calculate season catch data
+
+    catch_data <- get_catch_data(catch_effort, licenced_vessels, fsr_data, rep_period)
+    
+        message("Current catches are in") #this is just for debbug
+
+# 6: Inform Vessels participating
+    
+    vsl_vms_data <- check_vms_positions(area, fsr_data, alt_date, licenced_vessels)
+    vsl_vms_positions <- vsl_vms_data$vsl_vms_positions
+    
+        message("VMS positions in") #this is just for debbug
+    
+    vsls_fishing <- who_will_fish(licenced_vessels, vsl_vms_positions, catch_data, fsr_data, alt_date)
+    
+   #Update vsls fishing according with the chooser option
+    message(paste("change_vsls is", change_vsls))
+    if (change_vsls == TRUE) {
+
+    is_fishing <- which(vsls_fishing$VSL_Name %in% vslchooser_l)
+    is_not_fishing <- which(vsls_fishing$VSL_Name %in% vslchooser_r)
+
+    vsls_fishing$fishing[is_fishing] <- 1
+    vsls_fishing$fishing[is_not_fishing] <- 0
+
+    }
+
+# 7: Create projections
+     projections <- project_fishery(vsls_fishing, type = "avg_day_cpue", fsr_data, catch_data, days_project=100, alt_date, vsl_vms_data)
+     
+# 8: Plot results
+    # catch_limit <- projections$catch_limit
+    # table_of_results <- projections$vsls_project_total
+    # tot_vessels_fishing <- projections$tot_vessels_fishing
+    # current_catch <- ((sum(catch_data$catch$Catch, na.rm = T))/1000 + fsr_data$catch_reallocated) %>%  round(digits = 2)
+    # hooks_in <- catch_data$hooks_in
+  
+    # status <- projections$highlights$values[projections$highlights$variables == "Status"]
+    # 
+    # if (status == "Ongoing fishery") {
+    #   
+    # closure <- (projections$closure + lubridate::days(1) - 1) %>% format("%d/%m/%Y %H:%M")
+    # no_sets_after <- (projections$no_sets_after + lubridate::days(1) - 1) %>% format("%d/%m/%Y %H:%M")
+    # 
+    # }
+    #     catches_percent <- (1-(projections$final_catch/projections$catch_limit))*100
+    # catches_day_after <- (((projections$final_catch+projections$daily_catch)/projections$catch_limit)-1)*100
+     
+
+
+```
+
+```{r report-opening-text, results='asis'}
+
+ref_date <- format(alt_date, '%d/%m/%Y')
+
+# cat(paste('In accordance with the procedure described in CCAMLR-38 Annex 8 the Secretariat advises the following forecast for longline fisheries in ', area, ' for the ', s-1, '/', sub('..', '', as.character(s) ),' season:', sep=''))
+cat(paste('Catch forecast for ', paste(gear, collapse = " and "), ' fishing activities in ', area, ' for the ', as.integer(s)-1, '/', sub('..', '', as.character(s) ),' season, up to ', ref_date, ':',sep=''))
+
+# Catch forecast for longline fishing activities in `r area `up to `r format(alt_date,"%d/%m/%Y") `.  
+#    
+# * Total catch reported up to end of `r format(alt_date,"%d/%m/%Y") ` is `r current_catch ` tonnes.  
+# * This totals `r round((current_catch/catch_limit)*100, digits = 2) `% of the Catch Limit of  `r catch_limit ` tonnes.  
+# * At the time this notice was generated  `r hooks_in ` hooks remain in the water.  
+# * The forecasted Closure Date is `r closure `, with no hooks set from `r no_sets_after ` and the predicted catch will be `r round(projections$final_catch, digits =2) `.
+```
+
+```{r results='asis'}
+
+     highlights <- projections$highlights %>% 
+        dplyr::filter(!(variables %in% c("Precise closure time", "Percentage if close 1 more day", "Number of hooks in the water", "Percentage below catch limit")))
+
+      if (gear == "trawl") {
+        
+        highlights <- highlights %>% 
+          dplyr::filter(!(variables %in% c("No sets after (projected)", "Expected catch of hooks in the water (tonnes)")))
+        
+      }
+
+      names(highlights)[1] <- ""
+
+      pander::pander(highlights)
+    
+```
+<br><br><br><br><br>  
+     
+```{r results='asis'}
+    newplot <- plot_forecasting(projections, area, s)
+
+    newplot
+    
+    effort_last_days <- catch_data$effort_last_days
+    
+```
+<br>  
+<br>  
+
+```{r  results='asis'}
+
+
+if (dim(effort_last_days)[1] > 0 & gear != "trawl") {
+  
+  cat("**Effort in the last 5 days**")
+  
+}
+
+```
+
+```{r}
+
+if (dim(effort_last_days)[1] > 0 & gear != "trawl") {
+
+  pander::pander(effort_last_days)
+  
+}
+
+```

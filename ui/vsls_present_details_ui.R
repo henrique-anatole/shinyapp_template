@@ -1,0 +1,1 @@
+vsls_present <- tabPanel("Vessels presence details", DT::DTOutput("vsl_presence_details"))

@@ -1,0 +1,81 @@
+---
+title: "test"
+author: "test"
+geometry: left=2cm,right=2cm,top=0.5cm,bottom=1cm
+output: pdf_document
+
+---
+
+```{r global-options, include=FALSE}
+
+# 1: libraries
+library(readr)
+library(tidyverse)
+library(lubridate)
+library(CCAMLRGIS)
+library(ccamlrtools)
+library(knitr)
+library(pander) #Need to install pandoc on your computer too
+
+# 2 clean the working space
+  rm(list=ls())
+
+# 3 Load functions source files ( ‘ ~ / functions ’ )
+  # check all files in the folder
+  func_files <- list.files(path = "functions", full.names = T, recursive = T)
+  # run all files listed as source
+  suppressMessages(lapply(func_files, source))
+  
+# 4 Set chunck options for the whole document here
+  # See str(knitr::opts_chunk$get()) for a list of default chunk options.
+opts_chunk$set(fig.width=8, fig.height=4, dpi=200,cache=FALSE,
+               highlight=F,echo=FALSE, warning=FALSE, message=FALSE)
+
+# 5 Set some pander options to format tables (limited options)
+panderOptions('table.alignment.default', function(df)
+    ifelse(sapply(df, is.numeric), 'right', 'left'))
+panderOptions('table.split.table', Inf)
+panderOptions('table.split.cells', Inf)
+panderOptions('keep.trailing.zeros', TRUE)
+
+# 6: Present the variables to simulate
+    # s = 2021 #Just for tests. Season year. No default.
+    # area = "RSR South 70" #Just for tests, no default this time   
+    # area = "SRZ"
+    # area = "SSRU 88.2 H"
+    # area = "Research Block 88.2_2"
+    # area = "Division 58.5.2"
+    # area = "Ross Sea shelf survey area"
+    # area = "Research Block 48.6_2"
+    # area = "Subarea 88.1 and 882A–B"
+    # area = "Subarea 48.2"
+    # sp <- "Dissostichus mawsoni" #get species group with catch limits
+    # sp <- "Dissostichus eleginoides" #get species group with catch limits
+    # sp <- "Euphausia superba" #get species group with catch limits
+    # alt_date = Sys.Date() %>% as.character() %>% as.POSIXct(tz = "UTC") #Instead of current date use other date as a standard to check for vms presence - could be useful for other areas during the season 
+    # alt_date = "2020-04-02" %>% as.POSIXct(tz = "UTC")
+    # type = "avg_day_cpue" #Can be changed to type = "avg_day_no_cpue"
+    # change_vsls <- FALSE
+    # days_project=100
+    # rep_period <- NA
+
+date_range <- as.Date(c(Sys.Date() - days(30), Sys.Date()))
+
+```
+
+```{r chunk name, results='asis'}
+
+transhipments <- load_transhipments()
+
+# diff.POSIXt(THP_Date_Received,THP_Transfer_Date) should be < 72h
+# diff.POSIXt(Date_Report_Confirmed,Confirmed_Transfer_Date) should be < 72h
+
+
+
+```
+
+```{r vms-freq, results='asis'}
+
+
+  
+```
