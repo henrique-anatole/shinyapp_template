@@ -1,7 +1,7 @@
 controls <- sidebarPanel( 
   
   ##-- control fields ----
-  h1("General variables"),
+  h3("General variables"),
   dateRangeInput("date_range", "Date range input",
                  start = Sys.Date() - 10, end = Sys.Date()),
   
@@ -38,7 +38,7 @@ controls <- sidebarPanel(
   #     
   #   ),
   #   
-  h1("Specific port inspection variables"),
+  h3("Specific port inspection variables"),
   checkboxInput("ca", "Only consider catches in CCAMLR area", value = T),
   #   
   numericInput("d_tolerance", "how many days of tolerance for port_inspections?", 20),
