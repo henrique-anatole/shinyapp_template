@@ -110,21 +110,48 @@ dcd_port_check <- function(dcds, d_tolerance, start_date, end_date, ca) {
     
   }
   
-  #this filters out DCDs which are outside of the Convention Area
+  #filter period
+  dcd_port_inspected <- dcd_port_inspected %>% 
+    dplyr::filter(PIN_Date_Received >= start_date, PIN_Date_Received <= end_date) %>% 
+    unique()
+  
+  #this filters out DCDs which are outside of the Convention Area. The filter to inform it is in CCAMLR area need review in the future
   if (ca==T) {
     dcd_port_inspected <- dcd_port_inspected %>% dplyr::filter(GAR_Name %in% unique(dcds_all$GAR_Name)[-c(grep("Area*", unique(dcds_all$GAR_Name)), grep("Division 41.3*", unique(dcds_all$GAR_Name)))])
   } 
   
+  pi_due <- dcd_port_inspected %>% 
+    dplyr::filter(is.na(PIN_ID)) %>% 
+    select(DCD_ID,	DCD_Document_Number,	DCD_Port_Entry_Date,	DCD_Landing_Confirmed_Date,	DCD_Landing_Confirmed_YN,	VSL_Name = VSL_Name.x,	Vessel_Flag = `Vessel Flag.x`,	GAR_Name,	FCT_EEZ_YN,	`DCD Port`,	`DCD Port Country`) %>% 
+    unique()
+  
+  pi_within_48 <- dcd_port_inspected %>% 
+    dplyr::filter(!is.na(PIN_ID), days_to_inspect <= 2) %>% 
+    select(PIN_ID,	VSL_Name = VSL_Name.y,	Vessel_Flag = `Vessel Flag.y`,	`Port name` = `Inspection port`,	`Port State` = `Inspection Port Country`, Arrival_Date, Inspection_Date, Days_to_inspect = days_to_inspect) %>% 
+    unique()
+  
+  pi_transmitted_30 <- dcd_port_inspected %>% 
+    dplyr::filter(!is.na(PIN_ID), Days_to_transmit <= 30) %>% 
+    select(PIN_ID,	VSL_Name = VSL_Name.y,	Vessel_Flag = `Vessel Flag.y`,	`Port name` = `Inspection port`,	`Port State` = `Inspection Port Country`, Arrival_Date, Inspection_Date, Days_to_transmit) %>% 
+    unique()
+  
   pi_missing <- port_inspections %>% 
-    dplyr::filter(!(PIN_ID %in% dcd_port_inspected$PIN_ID), PIN_Date_Received >= start_date, PIN_Date_Received <= end_date )
+    dplyr::filter(!(PIN_ID %in% dcd_port_inspected$PIN_ID), PIN_Date_Received >= start_date, PIN_Date_Received <= end_date ) %>% 
+    unique()
   
   } else {
     dcd_port_inspected <- NULL
+    pi_due <- NULL
+    pi_within_48 <- NULL
+    pi_transmitted_30 <- NULL
     pi_missing <- NULL
   }
   
-  return(list(dcd_port_inspected=unique(dcd_port_inspected)
-              , pi_missing=pi_missing))
+  return(list(dcd_port_inspected = dcd_port_inspected
+              , pi_missing = pi_missing
+              , pi_due = pi_due
+              , pi_within_48 = pi_within_48
+              , pi_transmitted_30 = pi_transmitted_30))
   
 }
 
