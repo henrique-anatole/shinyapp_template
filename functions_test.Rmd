@@ -60,6 +60,10 @@ panderOptions('keep.trailing.zeros', TRUE)
     # rep_period <- NA
 
 date_range <- as.Date(c(Sys.Date() - days(30), Sys.Date()))
+d_tolerance <- 20
+ca <- TRUE
+end_date <- date_range[2]
+start_date <- date_range[1]
 
 ```
 
@@ -70,12 +74,15 @@ transhipments <- load_transhipments()
 # diff.POSIXt(THP_Date_Received,THP_Transfer_Date) should be < 72h
 # diff.POSIXt(Date_Report_Confirmed,Confirmed_Transfer_Date) should be < 72h
 
-
-
 ```
 
-```{r vms-freq, results='asis'}
+```{r por-inspections, results='asis'}
+
+port_inspections <- check_port_inspections(start_date, end_date, d_tolerance, ca)
+
+port_inspections$dcd_port_inspected
+
+port_inspections$pi_missing
 
 
-  
 ```

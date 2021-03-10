@@ -2,7 +2,7 @@
 shinyUI(fluidPage(
      
   # Application title
-   titlePanel("Transhipments"),
+   titlePanel("CCEP tables"),
    
   # Sidebar with options to choose
   sidebarLayout(
@@ -14,7 +14,8 @@ shinyUI(fluidPage(
       tabsetPanel(
         
         # debug #uncomment to use as test, if needed
-        main
+        transhipments_view,
+        port_inspections_view
         
       ),
       

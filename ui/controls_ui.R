@@ -1,7 +1,7 @@
 controls <- sidebarPanel( 
   
   ##-- control fields ----
-  
+  h1("General variables"),
   dateRangeInput("date_range", "Date range input",
                  start = Sys.Date() - 10, end = Sys.Date()),
   
@@ -38,13 +38,14 @@ controls <- sidebarPanel(
   #     
   #   ),
   #   
-  #   selectInput("type", "No different approach available yet, sorry...", list("avg_day_cpue")),
+  h1("Specific port inspection variables"),
+  checkboxInput("ca", "Only consider catches in CCAMLR area", value = T),
   #   
-  #   numericInput("rep_period", "how many reporting periods to calculate the averages? Default is all period (leave it blank)", NA)
+  numericInput("d_tolerance", "how many days of tolerance for port_inspections?", 20),
   #   
   # ),
   # 
-  # actionButton("forecast", "Run forecast"),
+  actionButton("get_data", "Click to check results"),
   
   , width = 3
   

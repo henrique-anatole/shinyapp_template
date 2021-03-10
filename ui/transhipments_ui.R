@@ -1,3 +1,3 @@
-main <- tabPanel("CCAMLR Transhipments", 
+transhipments_view <- tabPanel("Transhipments", 
                    DTOutput("transhipments_all"))
 

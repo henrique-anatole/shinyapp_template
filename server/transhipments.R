@@ -1,6 +1,7 @@
 output$transhipments_all <- renderDT({
 
-  table_to_show <- get_tranships_data() 
+  table_to_show <- get_all_data() %>% 
+    .$transhipments
   # %>%
   #   .$posit_alert_1 %>%
   #   dplyr::mutate_if(is.POSIXt, function(x) {
