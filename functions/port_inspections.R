@@ -126,12 +126,12 @@ dcd_port_check <- function(dcds, d_tolerance, start_date, end_date, ca) {
     unique()
   
   pi_within_48 <- dcd_port_inspected %>% 
-    dplyr::filter(!is.na(PIN_ID), days_to_inspect <= 2) %>% 
+    dplyr::filter(!is.na(PIN_ID), days_to_inspect > 2) %>% 
     select(PIN_ID,	VSL_Name = VSL_Name.y,	Vessel_Flag = `Vessel Flag.y`,	`Port name` = `Inspection port`,	`Port State` = `Inspection Port Country`, Arrival_Date, Inspection_Date, Days_to_inspect = days_to_inspect) %>% 
     unique()
   
   pi_transmitted_30 <- dcd_port_inspected %>% 
-    dplyr::filter(!is.na(PIN_ID), Days_to_transmit <= 30) %>% 
+    dplyr::filter(!is.na(PIN_ID), Days_to_transmit > 30) %>% 
     select(PIN_ID,	VSL_Name = VSL_Name.y,	Vessel_Flag = `Vessel Flag.y`,	`Port name` = `Inspection port`,	`Port State` = `Inspection Port Country`, Arrival_Date, Inspection_Date, Days_to_transmit) %>% 
     unique()
   
