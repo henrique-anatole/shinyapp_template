@@ -135,7 +135,7 @@ dcd_port_check <- function(dcds, d_tolerance, start_date, end_date, ca) {
     select(PIN_ID,	VSL_Name = VSL_Name.y,	Vessel_Flag = `Vessel Flag.y`,	`Port name` = `Inspection port`,	`Port State` = `Inspection Port Country`, Arrival_Date, Inspection_Date, Days_to_transmit) %>% 
     unique()
   
-  pi_missing <- port_inspections %>% 
+  pi_no_dcd <- port_inspections %>% 
     dplyr::filter(!(PIN_ID %in% dcd_port_inspected$PIN_ID), PIN_Date_Received >= start_date, PIN_Date_Received <= end_date ) %>% 
     unique()
   
@@ -144,11 +144,11 @@ dcd_port_check <- function(dcds, d_tolerance, start_date, end_date, ca) {
     pi_due <- NULL
     pi_within_48 <- NULL
     pi_transmitted_30 <- NULL
-    pi_missing <- NULL
+    pi_no_dcd <- NULL
   }
   
   return(list(dcd_port_inspected = dcd_port_inspected
-              , pi_missing = pi_missing
+              , pi_no_dcd = pi_no_dcd
               , pi_due = pi_due
               , pi_within_48 = pi_within_48
               , pi_transmitted_30 = pi_transmitted_30))

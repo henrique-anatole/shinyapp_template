@@ -6,4 +6,6 @@ port_inspections_view <- tabPanel("Port Inspections",
                         h3("Reports transmitted within 30 days"),
                         DT::DTOutput("pi_transmit_within30"),
                         h3("All inspections"),
-                        DT::DTOutput("all_port_inspections"))
+                        DT::DTOutput("all_port_inspections"),
+                        h3("Port Inspections - no DCD"),
+                        DT::DTOutput("port_inspections_no_dcd"))
