@@ -16,7 +16,7 @@ data_query_web_VSL = paste ("SELECT [VSL_Version_ID]
       ,[VSL_ID]
       ,[VSL_Name]
       ,[CTY_Authorising_ID]
-      ,[CTY_Flag_ID]
+      ,[CTY_ISO_3_Code]
       ,[VSL_IRCS]
       ,[VSL_BuiltIn_Year]
       ,[VSL_Registration_Number]
@@ -179,54 +179,72 @@ load_transhipments <- function(start_date = Sys.time() - days(30), end_date = Sy
   end_date <- end_date %>% format("%Y-%m-%d")
   
   data_query = paste ("SELECT [THP_ID]
-      ,[Transferring_VSL_ID]
-	  ,V1.[VSL_NAME] as Transferring_vsl_name
-      ,[Receiving_VSL_ID]
-  	  ,V2.[VSL_NAME] as Receiving_vsl_name
-      ,[THP_Transfer_Date]
-      ,[THP_Details]
-      ,[GAR_ID]
-      ,[Notifying_CTY_ID]
-      ,[THP_Latitude]
-      ,[THP_Longitude]
-      ,[THP_Date_Received]
-      ,[Confirmed_Transfer_Date]
-      ,[Confirmed_Area]
-      ,[Confirmed_Position_Latitude]
-      ,[Confirmed_Position_Longitude]
-      ,[Date_Report_Confirmed]
-      ,[Notified_THP_DETAILS_ID]
-      ,[Confirmed_THP_DETAILS_ID]
-      ,T.[CreatedOn]
-      ,T.[CreatedBy]
-      ,T.[ModifiedOn]
-  FROM [CCAMLR].[dbo].[TRANSHIPMENT] as T
-  INNER JOIN [CCAMLR].[dbo].[VESSEL] as V1
-  ON T.[Transferring_VSL_ID] = V1.[VSL_VERSION_ID]
-  INNER JOIN [CCAMLR].[dbo].[VESSEL] as V2
-  ON T.[Receiving_VSL_ID] = V2.[VSL_VERSION_ID]
-  WHERE CONVERT(date, THP_Transfer_Date) >= '",start_date,"'
-  AND CONVERT(date, THP_Transfer_Date) <= '",end_date,"'  ", sep = "")
+    ,[Transferring_VSL_ID]
+    ,V1.[VSL_NAME] as Transferring_vsl_name
+    ,[Receiving_VSL_ID]
+    ,V2.[VSL_NAME] as Receiving_vsl_name
+    ,[Notified_Start_Transfer_Date]
+    ,[Notified_Other_Goods_Details]
+    ,[Notified_Area]
+    ,[Notifying_CTY_ID]
+    ,[Notified_Position_Latitude]
+    ,[Notified_Position_Longitude]
+    ,[Notified_Date_Receipt_Transferring_Vessel]
+    ,[Confirmed_Start_Transfer_Date]
+    ,[Confirmed_Area]
+    ,[Confirmed_Position_Latitude]
+    ,[Confirmed_Position_Longitude]
+    ,[Confirmed_Date_Receipt_Transferring_Vessel]
+    ,[THP_Status]
+    ,[Notified_End_Transfer_Date]
+    ,[Confirm_End_Transfer_Date]
+    ,[Confirmed_Other_Goods_Details]
+    ,[Notified_Date_Receipt_Receiving_Vessel]
+    ,[Confirmed_Date_Receipt_Receiving_Vessel]
+    ,[Includes_HMLR_B_F]
+    ,[Date_Notified_Cancellation]
+    ,T.[CreatedOn]
+    ,T.[CreatedBy]
+    ,T.[ModifiedOn]
+FROM [CCAMLR].[dbo].[WEB_TRANSHIPMENT] as T
+INNER JOIN [CCAMLR].[dbo].[VESSEL] as V1
+ON T.[Transferring_VSL_ID] = V1.[VSL_VERSION_ID]
+INNER JOIN [CCAMLR].[dbo].[VESSEL] as V2
+ON T.[Receiving_VSL_ID] = V2.[VSL_VERSION_ID]
+  WHERE CONVERT(date, [Notified_Start_Transfer_Date]) >= '",start_date,"'
+  AND CONVERT(date, [Notified_Start_Transfer_Date]) <= '",end_date,"'  ", sep = "")
 
 transhipments_1 <- ccamlrtools::queryccamlr(query = data_query, asis = F)
 # write.csv(transhipments_1, file = "transhipments_1.csv")
 
-tz(transhipments_1$THP_Transfer_Date) <- "UTC"
+tz(transhipments_1$Notified_Start_Transfer_Date) <- "UTC"
+tz(transhipments_1$Notified_Date_Receipt_Transferring_Vessel) <- "UTC"
+tz(transhipments_1$Confirmed_Start_Transfer_Date) <- "UTC"
+tz(transhipments_1$Notified_End_Transfer_Date) <- "UTC"
+tz(transhipments_1$Confirm_End_Transfer_Date) <- "UTC"
+tz(transhipments_1$Confirmed_Date_Receipt_Receiving_Vessel) <- "UTC"
+tz(transhipments_1$Confirmed_Date_Receipt_Transferring_Vessel) <- "UTC"
+tz(transhipments_1$CreatedOn) <- "UTC"
+tz(transhipments_1$ModifiedOn) <- "UTC"
 
-min_DETAILS_ID <- transhipments_1 %>% 
-  dplyr::filter(!is.na(transhipments_1$Notified_THP_DETAILS_ID)) %>% 
-  .$Notified_THP_DETAILS_ID %>% 
+
+
+#Accelarate the query on details
+min_THP_ID <- transhipments_1 %>% 
+  dplyr::filter(!is.na(transhipments_1$THP_ID)) %>% 
+  .$THP_ID %>% 
   min()
 
 data_query = paste ("SELECT *  FROM [CCAMLR].[dbo].[WEB_TRANSHIPMENT_DETAILS]
-                    WHERE THP_DETAILS_ID >= '",min_DETAILS_ID,"'
+                    WHERE THP_ID >= '",min_THP_ID,"'
                     ", sep = "")
 
 transhipments_2 <- ccamlrtools::queryccamlr(query = data_query, asis = F)
 # write.csv(transhipments_2, file = "transhipments_2.csv")
 
 # tranship_filtered <- transhipments %>% dplyr::filter(CreatedBy == "henrique")
-transhipments <- transhipments_1 %>% left_join(transhipments_2, by = c("Notified_THP_DETAILS_ID" = "THP_DETAILS_ID")) %>% left_join(transhipments_2, by= c("Confirmed_THP_DETAILS_ID" = "THP_DETAILS_ID"))
+
+transhipments <- transhipments_1 %>% left_join(transhipments_2, by = c("THP_ID" = "THP_ID"))
 # 
 # tranship_filtered_2 <- transhipments_1 %>% left_join(transhipments_2, by = c("Notified_THP_DETAILS_ID" = "THP_DETAILS_ID")) %>% left_join(transhipments_2, by= c("Confirmed_THP_DETAILS_ID" = "THP_DETAILS_ID")) %>% select(THP_ID, Quantity.x, Quantity.y)
 # 

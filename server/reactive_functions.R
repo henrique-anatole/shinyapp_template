@@ -7,7 +7,7 @@ get_all_data <- eventReactive(input$get_data, {
   
   showModal(modalDialog("Getting data", footer=NULL))
   
-  transhipments <- load_transhipments(start_date = date_range[1], end_date = date_range[2])
+  transhipments <- get_transhipments(date_range)
   
   port_inspections <- check_port_inspections(start_date = date_range[1], end_date = date_range[2], d_tolerance = input$d_tolerance, input$ca)
   

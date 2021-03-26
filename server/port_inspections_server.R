@@ -17,12 +17,12 @@ output$all_port_inspections <- renderDT({
   
   
   
-  table_to_show <- datatable(table_to_show, selection = 'none', editable = F, options = append(dt_options, dt_options_local), caption="All Transhipments now", filter = 'top', width = "auto",
+  table_to_show <- datatable(table_to_show, selection = 'none', editable = F, options = append(dt_options, dt_options_local), caption="All Port Inspections", filter = 'top', width = "auto",
                              extensions = 'Buttons', rownames = FALSE)
   
   return(table_to_show)
 
-})
+}, server = F)
 
 output$due_port_inspections <- renderDT({
   
@@ -45,7 +45,7 @@ output$due_port_inspections <- renderDT({
   
   return(table_to_show)
   
-})
+}, server = F)
 
 output$pi_within48 <- renderDT({
   
@@ -68,7 +68,7 @@ output$pi_within48 <- renderDT({
   
   return(table_to_show)
   
-})
+}, server = F)
 
 output$pi_transmit_within30 <- renderDT({
   
@@ -91,4 +91,4 @@ output$pi_transmit_within30 <- renderDT({
   
   return(table_to_show)
   
-})
+}, server = F)
