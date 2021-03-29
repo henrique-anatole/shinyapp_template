@@ -46,7 +46,7 @@ data_query_web_VSL = paste ("SELECT [VSL_Version_ID]
       ,[ModifiedBy]
       ,[ModifiedOn]
     FROM [VESSEL] INNER JOIN [COUNTRY]
-      ON [CTY_Authorising_ID] = [CTY_ID]")
+      ON [CTY_Flag_ID] = [CTY_ID]")
 
 web_Vessel <- ccamlrtools::queryccamlr(query = data_query_web_VSL, db="ccamlr", asis = F)
 # write.csv(web_Vessel, file = "web_Vessel.csv")
@@ -226,8 +226,6 @@ tz(transhipments_1$Confirmed_Date_Receipt_Receiving_Vessel) <- "UTC"
 tz(transhipments_1$Confirmed_Date_Receipt_Transferring_Vessel) <- "UTC"
 tz(transhipments_1$CreatedOn) <- "UTC"
 tz(transhipments_1$ModifiedOn) <- "UTC"
-
-
 
 #Accelarate the query on details
 min_THP_ID <- transhipments_1 %>% 
@@ -866,6 +864,89 @@ INNER JOIN COUNTRY ON VESSEL.CTY_Flag_ID = COUNTRY.CTY_ID"
   movements <- dplyr::select(movements, -VMO_Exit_Date_temp)
   
   return(movements)
+}
+
+load_dcd_data <- function() {
+  # Pulls in the DCD data
+  data_query = paste ("SELECT DISTINCT dcd.[DCD_ID]
+      ,[DCD_Document_Number]
+      ,[DCD_Issuing_Authority_ORG_ID]
+      ,[DCD_Flag_State_Confirmation]
+      ,[DCD_Fishing_To_Date]
+      ,[DCD_Fishing_From_Date]
+      ,[DCD_Port_Departure_Date]
+      ,[DCD_Port_Entry_Date]
+      ,dcd.[VSL_Version_ID]
+	    ,vsl.[VSL_Name]
+	    ,vsl.VSL_ID
+	    ,c.CTY_Name as 'Vessel Flag'
+      ,[DCD_Licence_Number]
+      ,[DCD_Landing_Confirmed_YN]
+      ,[DCD_Landing_Confirmed_Date]
+	    ,fc.[GAR_ID]
+	    ,[GAR_Name]
+	,fc.[FCT_EEZ_YN]
+      ,[POR_NAME] as 'DCD Port'
+	    ,c2.CTY_Name as 'DCD Port Country'
+  FROM [CCAMLR].[dbo].[DCD] as dcd
+  INNER JOIN [dbo].[VESSEL] as vsl
+  ON dcd.[VSL_Version_ID] = vsl.[VSL_Version_ID]
+  INNER JOIN [dbo].[COUNTRY] as c
+  ON vsl.[CTY_Flag_ID] = c.CTY_ID
+  INNER JOIN [dbo].[FISH_CAUGHT] as fc
+  ON dcd.[DCD_ID] = fc.[DCD_ID]
+  INNER JOIN [dbo].[GEOGRAPHICAL_AREA] as ga
+  ON fc.GAR_ID = ga.GAR_ID
+  INNER JOIN [dbo].[LANDING] as l
+  ON dcd.[DCD_ID] = l.[DCD_ID]
+  INNER JOIN [dbo].[PORT] as p
+  on l.[POR_ID] = p.[POR_ID]
+  INNER JOIN [dbo].[COUNTRY] as c2
+  ON p.[CTY_ID] = c2.CTY_ID")
+  
+  dcds_all <- ccamlrtools::queryccamlr(query = data_query, asis = F, db = "ccamlr")
+  tz(dcds_all$DCD_Fishing_To_Date) <- "UTC"
+  tz(dcds_all$DCD_Fishing_From_Date) <- "UTC"
+  tz(dcds_all$DCD_Port_Entry_Date) <- "UTC"
+  tz(dcds_all$DCD_Port_Departure_Date) <- "UTC"
+  tz(dcds_all$DCD_Landing_Confirmed_Date) <- "UTC"
+  
+  return(dcds_all)
+  
+}
+  
+load_port_inspections <- function() {
+  
+  #Pulls in the Port Inspection data  
+  data_query = paste ("SELECT [PIN_ID]
+	    ,vsl.[VSL_Name]
+	    ,vsl.VSL_ID
+	    ,c.CTY_Name as 'Vessel Flag'
+      ,[POR_NAME] 'Inspection port'
+	    ,c2.CTY_Name as 'Inspection Port Country'
+      ,[Inspection_Date]
+      ,[Arrival_Date]
+      ,[Comment]
+      ,[PIN_Date_Received]
+	    ,pin.[CreatedOn] as 'Port Inspection Created date'
+  FROM [CCAMLR].[dbo].[PORT_INSPECTION] as pin
+  INNER JOIN [dbo].[VESSEL] as vsl
+  ON pin.[VSL_Version_ID] = vsl.[VSL_Version_ID]
+  INNER JOIN [dbo].[COUNTRY] as c
+  ON vsl.[CTY_Flag_ID] = c.CTY_ID
+  INNER JOIN [dbo].[PORT] as p
+  on pin.[POR_ID] = p.[POR_ID]
+  INNER JOIN [dbo].[COUNTRY] as c2
+  ON p.[CTY_ID] = c2.CTY_ID")
+  
+  port_inspections <- ccamlrtools::queryccamlr(query = data_query, asis = FALSE, db = "ccamlr")
+  tz(port_inspections$Inspection_Date) <- "UTC"
+  tz(port_inspections$Arrival_Date) <- "UTC"
+  tz(port_inspections$PIN_Date_Received) <- "UTC"
+  tz(port_inspections$`Port Inspection Created date`) <- "UTC"
+  
+  return(port_inspections)
+  
 }
 
 

@@ -6,5 +6,5 @@ transhipments_view <- tabPanel("Transhipments",
                    h3("Transhipments confirmed after 3 working days"),
                    DT::DTOutput("transhipments_alert3"),
                    tags$p("Before 01/12/2020, we just recorded the first of the confirmations received"),
-                   h3("All All Transhipments during the period"),
+                   h3("All Transhipments during the period"),
                    DTOutput("transhipments_all"))

@@ -62,7 +62,7 @@ get_transhipments <- function(date_range) {
   
   transhipments_check_confirmation <- transhipments_check_confirmation %>% 
     mutate("Receiving vessel: weekdays" = Nweekdays(reference_date, `Confirmation date: Receiving vessel`), "Transferring vessel: weekdays" = Nweekdays(reference_date, `Confirmation date: Tranferring vessel`)) %>% 
-    select(-reference_date)
+    dplyr::select(-reference_date)
   
   return(list(transhipments_all = transhipments
               ,transhipments_check_HMLR = transhipments_check_HMLR
