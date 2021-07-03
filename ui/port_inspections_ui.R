@@ -1,13 +1,6 @@
-port_inspections_view <- tabPanel("Port Inspections", 
-                        h3("Due port inspections"),
-                        DT::DTOutput("due_port_inspections"),
-                        h3("Inspections NOT done in 48h after landing"),
-                        DT::DTOutput("pi_within48"),
-                        h3("Reports NOT transmitted within 30 days"),
-                        DT::DTOutput("pi_transmit_within30"),
-                        h3("Port inspections with NO associated DCD"),
-                        DT::DTOutput("dcds_missing"),
-                        h3("All port inspections only"),
-                        DT::DTOutput("all_port_inspections"),
-                        h3("All DCDs and port inspections matches"),
-                        DT::DTOutput("all_dcd_and_pi"))
+tab_view_2 <- tabPanel("tab_view_2", 
+                   h3("Output title 1"),
+                   #DTOutput("output_name"), 
+                   h3("Output title 1"),
+                   #DTOutput("output_name")
+                      )
