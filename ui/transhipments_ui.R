@@ -1,10 +1,6 @@
-transhipments_view <- tabPanel("Transhipments", 
-                   h3("Transhipments of marine life resources, fuel or bait notified with less than 72h"),
-                   DTOutput("transhipments_alert1"), 
-                   h3("Other Transhipments notified with less than 2h"),
-                   DT::DTOutput("transhipments_alert2"),
-                   h3("Transhipments confirmed after 3 working days"),
-                   DT::DTOutput("transhipments_alert3"),
-                   tags$p("Before 01/12/2020, we just recorded the first of the confirmations received"),
-                   h3("All Transhipments during the period"),
-                   DTOutput("transhipments_all"))
+tab_view_1 <- tabPanel("tab_view_1", 
+                   h3("Output title 1"),
+                   #DTOutput("output_name"), 
+                   h3("Output title 1"),
+                   #DTOutput("output_name")
+                      )
