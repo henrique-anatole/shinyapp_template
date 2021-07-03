@@ -8,6 +8,7 @@
   library(CCAMLRGIS)
   library(ccamlrtools)
   library(DT)
+  library(plotly)
 
 # 2 clean the working space
   rm(list=ls())
@@ -18,10 +19,9 @@
   # run all files listed as source
   suppressMessages(lapply(func_files, source))
 
-# 4	Call variables for menu controls
-  seasons <- load_seasons()
-  mt <- load_master_table() %>% dplyr::select(CSN_Code, DFA_Name, TGR_Name, DFL_Catch_Limit, DFL_Target_Bycatch) %>% unique() %>% dplyr::arrange()
-  area <- mt$DFA_Name %>% unique() %>% sort()
+# 4	Call variables for menu controls and others here
+ 
+  # Options for T tables template
   dt_options <- list(lengthMenu = c(25, 50), pageLength = 50, dom = 'rtipB',  buttons = c('copy', 'csv', 'excel'))
 
 # 5 Load ui files for the interface ( ‘ ~ / ui ’ ) ----
@@ -34,8 +34,4 @@
   # check all files in the folder
   server_files <- list.files(path = "server", full.names = T, recursive = T)
   # don't run here, only in the server.R file as 'local' to that environment
-
-  # debug_projetion <<- 1
-  # debug_plot <<- 1
-  
 
