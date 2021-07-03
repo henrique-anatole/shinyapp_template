@@ -2,6 +2,7 @@ controls <- sidebarPanel(
   
   ##-- control fields ----
   h3("General variables"),
+  
   dateRangeInput("date_range", "Date range input",
                  start = Sys.Date() - 10, end = Sys.Date()),
   
@@ -9,16 +10,7 @@ controls <- sidebarPanel(
   # 
   # uiOutput('area'),
   # 
-  # uiOutput('sp'),
-  # 
   # checkboxInput("config", "Change configuration", value = F),
-  # 
-  # 
-  # conditionalPanel(
-  #   
-  #   condition = "input.config == true",
-  #   
-  #   
   #   
   #   checkboxInput("change_vsls", "Change vessels participating", value = F),
   #   
@@ -31,15 +23,6 @@ controls <- sidebarPanel(
   #     }),
   #     
   #     uiOutput('choose_vsl'),
-  #     br(),
-  #     # actionButton("update_vsl", "Update vsls"),
-  #     # br(),
-  #     br()
-  #     
-  #   ),
-  #   
-  h3("Specific port inspection variables"),
-  checkboxInput("ca", "Only consider catches in CCAMLR area", value = T),
   #   
   numericInput("d_tolerance", "how many days of tolerance for port_inspections?", 20),
   #   
